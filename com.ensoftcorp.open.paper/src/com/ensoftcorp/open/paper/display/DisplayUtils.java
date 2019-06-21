@@ -69,5 +69,21 @@ public class DisplayUtils {
 		cfg = cfg.union(Common.universe().edges(XCSG.Contains).reverse(cfg));
 		DisplayUtil.displayGraph(markup, cfg.eval(), function.eval().nodes().one().getAttr(XCSG.name).toString());
 	}
+	
+	public static void styleGraph(Q graph) {
+		styleGraph(graph, null, true);
+	}
+	
+	public static void styleGraph(Q graph, Q events) {
+		styleGraph(graph, events, true);
+	}
+	
+	public static void styleGraph(Q graph, Q events, boolean extendsContainment) {
+		IMarkup markup = PrintMarkup.markup(graph, events);
+		if(extendsContainment) {
+			graph = graph.union(Common.universe().edges(XCSG.Contains).reverse(graph));
+		}
+		DisplayUtil.displayGraph(markup, graph.eval());
+	}
 
 }

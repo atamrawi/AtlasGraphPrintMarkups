@@ -2,7 +2,6 @@ package com.ensoftcorp.open.paper.markup;
 
 import java.awt.Color;
 
-import com.ensoftcorp.atlas.core.db.graph.Edge;
 import com.ensoftcorp.atlas.core.db.graph.GraphElement;
 import com.ensoftcorp.atlas.core.markup.IMarkup;
 import com.ensoftcorp.atlas.core.markup.Markup;
@@ -16,36 +15,59 @@ import com.ensoftcorp.open.pcg.common.PCG;
 
 public class PrintMarkup {
 	
-	public static final IMarkup BLACK_WHITE_MARKUP = new IMarkup() {
+	public static IMarkup BLACK_WHITE_MARKUP = new IMarkup() {
 		private final Color NODE_COLOR = Color.WHITE;
 		private final Color FOLDER_COLOR = Color.WHITE;
 		private final Color DATAFLOW_COLOR = Color.WHITE;
 		private final Color CONTROLFLOW_COLOR = Color.WHITE;
+		private final Color NODE_BORDER_COLOR = Color.BLACK;
 		private final Color SHADOW_COLOR = new Color(0, 0, 0, 50);
+		private final Color EDGE_COLOR = Color.BLACK;
 		
-		private final PropertySet NODES = new PropertySet().set(MarkupProperty.NODE_BACKGROUND_COLOR, NODE_COLOR)
+		private final PropertySet NODES = new PropertySet()
+				.set(MarkupProperty.NODE_BACKGROUND_COLOR, NODE_COLOR)
 				.set(MarkupProperty.NODE_GROUP_COLOR, FOLDER_COLOR)
-				.set(MarkupProperty.NODE_BORDER_COLOR, MarkupProperty.Colors.BLACK)
+				.set(MarkupProperty.NODE_BORDER_COLOR, NODE_BORDER_COLOR)
 				.set(MarkupProperty.NODE_SHADOW_COLOR, SHADOW_COLOR);
-		private final PropertySet DATAFLOW = new PropertySet().set(MarkupProperty.NODE_BACKGROUND_COLOR, DATAFLOW_COLOR)
+		
+		private final PropertySet DATAFLOW = new PropertySet()
+				.set(MarkupProperty.NODE_BACKGROUND_COLOR, DATAFLOW_COLOR)
 				.set(MarkupProperty.NODE_GROUP_COLOR, FOLDER_COLOR)
-				.set(MarkupProperty.NODE_BORDER_COLOR, MarkupProperty.Colors.BLACK)
+				.set(MarkupProperty.NODE_BORDER_COLOR, NODE_BORDER_COLOR)
 				.set(MarkupProperty.NODE_SHADOW_COLOR, SHADOW_COLOR);
+		
 		private final PropertySet CONTROLFLOW = new PropertySet()
 				.set(MarkupProperty.NODE_BACKGROUND_COLOR, CONTROLFLOW_COLOR)
 				.set(MarkupProperty.NODE_GROUP_COLOR, FOLDER_COLOR)
-				.set(MarkupProperty.NODE_BORDER_COLOR, MarkupProperty.Colors.BLACK)
+				.set(MarkupProperty.NODE_BORDER_COLOR, NODE_BORDER_COLOR)
 				.set(MarkupProperty.NODE_SHADOW_COLOR, SHADOW_COLOR);
+		
+		private final PropertySet CALL_EDGES = new PropertySet()
+				.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR);
+		
+		private final PropertySet CONTROLFLOW_EDGE = new PropertySet()
+				.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR);
+		
+		private final PropertySet CONTROLFLOW_TRUE_EDGE = new PropertySet()
+				.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR)
+				.set(MarkupProperty.LABEL_TEXT, "true");
+		
+		private final PropertySet CONTROLFLOW_FALSE_EDGE = new PropertySet()
+				.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR)
+				.set(MarkupProperty.LABEL_TEXT, "false")
+				.set(MarkupProperty.EDGE_STYLE, LineStyle.DASHED);
 
 		@Override
 		public PropertySet get(GraphElement element) {
-			if (element.taggedWith(XCSG.ControlFlow_Node) || element.taggedWith(PCG.PCGNode.PCGMasterEntry) || element.taggedWith(PCG.PCGNode.PCGMasterExit)) {
+			if (element.taggedWith(PCG.PCGNode.PCGMasterEntry) || element.taggedWith(PCG.PCGNode.PCGMasterExit)) {
 				return CONTROLFLOW;
-				// Use for appending line number to node label.
-				//SourceCorrespondence sc = (SourceCorrespondence)element.getAttr(XCSG.sourceCorrespondence);
-				//if(sc != null) {
-				//	return new PropertySet().set(MarkupProperty.LABEL_TEXT, (sc.startLine - 6) + ": " +element.getAttr(XCSG.name));
-				//}
+			}
+			if(element.taggedWith(XCSG.ControlFlow_Node)) {
+//				SourceCorrespondence sc = (SourceCorrespondence)element.getAttr(XCSG.sourceCorrespondence);
+//				if(sc != null) {
+//					return new PropertySet().set(MarkupProperty.LABEL_TEXT, (sc.startLine - 6) + ": " +element.getAttr(XCSG.name));
+//				}
+				return CONTROLFLOW;
 			}
 			if (element.taggedWith(XCSG.DataFlow_Node)) {
 				return DATAFLOW;
@@ -53,10 +75,24 @@ public class PrintMarkup {
 			if (element.taggedWith(XCSG.Node)) {
 				return NODES;
 			}
-			if (element instanceof Edge) {
-				if (element.taggedWith(XCSG.ControlFlow_Edge) && element.hasAttr(XCSG.conditionValue)) {
-					return new PropertySet().set(MarkupProperty.LABEL_TEXT, element.getAttr(XCSG.conditionValue).toString()); 
+			
+			if (element.taggedWith(XCSG.ControlFlow_Edge)) {
+				if(element.hasAttr(XCSG.conditionValue)) {
+					if(Boolean.TRUE.equals(element.getAttr(XCSG.conditionValue))) {
+						return CONTROLFLOW_TRUE_EDGE;
+					}
+					if(Boolean.FALSE.equals(element.getAttr(XCSG.conditionValue))) {
+						return CONTROLFLOW_FALSE_EDGE;
+					}
+					PropertySet propertySet = new PropertySet();
+					propertySet.set(MarkupProperty.LABEL_TEXT, element.getAttr(XCSG.conditionValue).toString());
+					return propertySet.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR);
 				}
+				return CONTROLFLOW_EDGE;
+			}
+			
+			if (element.taggedWith(XCSG.Call)) {
+				return CALL_EDGES;
 			}
 
 			return new PropertySet();
