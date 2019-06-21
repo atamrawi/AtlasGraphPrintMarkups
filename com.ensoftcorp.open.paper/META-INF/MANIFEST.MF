@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Print Markup for Atlas Graph
+Bundle-SymbolicName: com.ensoftcorp.open.paper;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.ensoftcorp.open.paper.main.Activator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.ensoftcorp.atlas.core;bundle-version="3.1.0",
+ com.ensoftcorp.atlas.ui;bundle-version="3.1.0",
+ com.ensoftcorp.atlas.ui.shell;bundle-version="3.1.0",
+ com.ensoftcorp.open.commons;bundle-version="3.2.0",
+ com.ensoftcorp.open.pcg;bundle-version="3.1.7"
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: paper-graphs-styling
