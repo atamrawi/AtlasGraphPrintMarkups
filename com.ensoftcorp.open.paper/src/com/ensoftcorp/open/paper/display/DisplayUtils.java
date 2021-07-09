@@ -14,18 +14,19 @@ import com.ensoftcorp.open.pcg.common.PCGFactory;
 public class DisplayUtils {
 	
 	public static void cfg(Q function) {
-		cfg(function, true);
+		cfg(function, true, true);
 	}
 	
-	public static void cfg(Q function,  boolean extendsContainment) {
-		cfg(function, null, extendsContainment);
+	public static void cfg(Q function,  boolean extendsContainment, boolean markuplines) {
+		cfg(function, null, extendsContainment, markuplines);
 	}
 	
 	public static void cfg(Q function, Q events) {
-		cfg(function, events, true);
+		cfg(function, events, true, true);
 	}
 	
-	public static void cfg(Q function, Q events, boolean extendsContainment) {
+	public static void cfg(Q function, Q events, boolean extendsContainment, boolean markupLines) {
+		PrintMarkup.MARKUP_LINES = markupLines;
 		Q cfg = CommonQueries.cfg(function);
 		PCG pcg = PCGFactory.create(cfg, cfg.nodes(XCSG.controlFlowRoot), cfg.nodes(XCSG.controlFlowExitPoint), cfg.nodes(XCSG.ControlFlow_Node));
 		cfg = pcg.getPCG();
