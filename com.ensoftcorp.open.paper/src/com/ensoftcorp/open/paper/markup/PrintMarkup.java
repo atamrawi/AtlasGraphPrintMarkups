@@ -78,7 +78,7 @@ public class PrintMarkup {
 			if (element.taggedWith(PCG.PCGNode.PCGMasterEntry) || element.taggedWith(PCG.PCGNode.PCGMasterExit)) {
 				return CONTROLFLOW;
 			}
-			if(element.taggedWith(XCSG.ControlFlow_Node)) {
+			if(element.taggedWith(XCSG.ControlFlow_Node) || element.taggedWith("XCSG.BasicBlock_Node")) {
 				SourceCorrespondence sc = (SourceCorrespondence)element.getAttr(XCSG.sourceCorrespondence);
 				if(MARKUP_LINES && sc != null) {
 					PropertySet propertySet = new PropertySet();
@@ -122,6 +122,30 @@ public class PrintMarkup {
 				return CONTROLFLOW_EDGE;
 			}
 			
+			if (element.taggedWith("XCSG.BasicBlock_Edge")) {
+				if(element.hasAttr("XCSG.BasicBlock (Edge).conditionValue")) {
+					if(Boolean.TRUE.equals(element.getAttr("XCSG.BasicBlock (Edge).conditionValue"))) {
+						if(element.taggedWith(XCSG.ControlFlowBackEdge)) {
+							return CONTROLFLOW_BACK_TRUE_EDGE;
+						}
+						return CONTROLFLOW_TRUE_EDGE;
+					}
+					if(Boolean.FALSE.equals(element.getAttr("XCSG.BasicBlock (Edge).conditionValue"))) {
+						if(element.taggedWith("XCSG.BasicBlock (Edge).conditionValue")) {
+							return CONTROLFLOW_BACK_FALSE_EDGE;
+						}
+						return CONTROLFLOW_FALSE_EDGE;
+					}
+					PropertySet propertySet = new PropertySet();
+					propertySet.set(MarkupProperty.LABEL_TEXT, element.getAttr("XCSG.BasicBlock (Edge).conditionValue").toString());
+					return propertySet.set(MarkupProperty.EDGE_COLOR, EDGE_COLOR);
+				}
+				if(element.taggedWith(XCSG.ControlFlowBackEdge)) {
+					return CONTROLFLOW_BACK_EDGE;
+				}
+				return CONTROLFLOW_EDGE;
+			}
+			
 			if (element.taggedWith(XCSG.Call)) {
 				return CALL_EDGES;
 			}
@@ -144,7 +168,9 @@ public class PrintMarkup {
 		Q cfEdge = Query.universe().edges(XCSG.ControlFlow_Edge);
 		m.setEdge(cfEdge, MarkupProperty.EDGE_COLOR, Color.BLACK);
 		Q cvTrue = Query.universe().selectEdge(XCSG.conditionValue, Boolean.TRUE, "true");
+		cvTrue = cvTrue.union(Query.universe().selectEdge("XCSG.BasicBlock (Edge).conditionValue", Boolean.TRUE, "true"));
 		Q cvFalse = Query.universe().selectEdge(XCSG.conditionValue, Boolean.FALSE, "false");
+		cvFalse = cvFalse.union(Query.universe().selectEdge("XCSG.BasicBlock (Edge).conditionValue", Boolean.FALSE, "false"));
 		m.setEdge(cvTrue, MarkupProperty.EDGE_COLOR, Color.BLACK);
 		m.setEdge(cvFalse, MarkupProperty.EDGE_COLOR, Color.BLACK);
 		//m.setEdge(cvFalse, MarkupProperty.EDGE_STYLE, LineStyle.DASHED);
